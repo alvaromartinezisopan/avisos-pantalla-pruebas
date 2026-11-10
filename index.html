@@ -198,6 +198,7 @@
         // Reloj de la pantalla. Solo para pruebas: se puede simular otra fecha añadiendo ?d=AAAA-MM-DD a la URL.
         const FECHA_SIMULADA = (new URLSearchParams(location.search)).get('d');
         const FORZAR_RESUMEN = (new URLSearchParams(location.search)).get('resumen') === '1';   // solo pruebas: muestra la tarjeta resumen aunque no toque
+        const DEMO_CELEB = (new URLSearchParams(location.search)).get('demo') === '1';   // solo pruebas: personas ficticias de ejemplo
         function reloj() {
             if (FECHA_SIMULADA && /^\d{4}-\d{2}-\d{2}$/.test(FECHA_SIMULADA)) {
                 const p = FECHA_SIMULADA.split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12, 0, 0);
@@ -236,6 +237,8 @@
             return !fest.general.has(iso) && !fest.local.has(iso);
         }
         function celebracionesFicticias() {
+            // Sin ?demo=1 ni ?resumen=1 no hay personas ficticias: la tele muestra el estado vacio real.
+            if (!DEMO_CELEB && !FORZAR_RESUMEN) return 'Nombre,Apellido,Nacimiento,Incorporacion,Puesto';
             const n = reloj(), d = n.getDate() + '/' + (n.getMonth() + 1) + '/';
             // Personas ficticias con celebración el fin de semana anterior, para poder ver la tarjeta resumen
             const sab = new Date(n); sab.setDate(n.getDate() - ((n.getDay() + 1) % 7));
