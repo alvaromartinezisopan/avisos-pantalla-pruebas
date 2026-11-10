@@ -80,6 +80,15 @@
             z-index: -2;
         }
 
+        /* Estado vacío (sin avisos): centrado en horizontal, arriba, azul corporativo */
+        .reposo-especial { background: transparent !important; border: none !important; box-shadow: none !important; justify-content: center; overflow: visible !important; }
+        .rp-centro { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u)*14); width: 100%; padding: calc(var(--u)*10) 0; }
+        .rp-ring { width: calc(var(--u)*110); height: calc(var(--u)*110); border-radius: 50%; background: linear-gradient(135deg, #e3f0ff, #eaf5ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 calc(var(--u)*10) rgba(10,100,216,.08), 0 0 calc(var(--u)*40) rgba(10,100,216,.25); }
+        .rp-inner { width: calc(var(--u)*78); height: calc(var(--u)*78); border-radius: 50%; background: #0a64d8; display: flex; align-items: center; justify-content: center; }
+        .rp-inner svg { width: calc(var(--u)*44); height: calc(var(--u)*44); fill: #fff; }
+        .rp-titulo { font-size: calc(var(--u)*36); font-weight: 900; color: #14355e; letter-spacing: calc(var(--u)*-0.8); }
+        .rp-sub { font-size: calc(var(--u)*18); font-weight: 600; color: #5a6b82; }
+
         /* Tarjeta resumen "Se nos pasó celebrar" */
         .resumen-lineas { display: flex; flex-direction: column; gap: calc(var(--u)*8); z-index: 2; position: relative; margin-top: calc(var(--u)*6); }
         .rl { display: flex; align-items: center; gap: calc(var(--u)*14); }
@@ -518,6 +527,13 @@
 
                 const badge = el.querySelector('.date-badge');
                 badge.innerText = d.badge; badge.style.display = d.badge ? 'block' : 'none';
+
+                if (d.cat === 'Reposo') {
+                    el.classList.add('reposo-especial');
+                    el.style.backgroundColor = 'transparent';
+                    el.innerHTML = '<div class="rp-centro"><div class="rp-ring"><div class="rp-inner">' + SVGS['Check'] + '</div></div><div class="rp-titulo">' + d.title + '</div><div class="rp-sub">' + d.msg + '</div></div>';
+                    return;
+                }
 
                 if (d.cat === 'ResumenCeleb') {
                     el.classList.add('celeb-special');
