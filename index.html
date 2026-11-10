@@ -320,6 +320,24 @@
             const items = [];
             const parseISO = s => { const m = (s || '').match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/); return m ? new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0)) : null; };
             const DIAS = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'], MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+            const DIAS_CORTOS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+            const formatearExtremoRango = (fecha, esInicio) => {
+                const dia = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+                const dayDiff = Math.round((dia.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+                if (dia < hoy) return esInicio ? `${DIAS[dia.getDay()]} ${dia.getDate()}` : `${DIAS[dia.getDay()]} ${dia.getDate()} ${MESES[dia.getMonth()]}`;
+                if (dayDiff === 0) return 'Hoy';
+                if (esInicio && dayDiff === 1) return 'Mañana';
+
+                const inicioSemana = new Date(hoy);
+                inicioSemana.setDate(inicioSemana.getDate() - ((inicioSemana.getDay() + 6) % 7));
+                const finSemana = new Date(inicioSemana);
+                finSemana.setDate(finSemana.getDate() + 6);
+                if (dia > hoy && dia <= finSemana) {
+                    const fechaCorta = ('0' + dia.getDate()).slice(-2) + '/' + ('0' + (dia.getMonth() + 1)).slice(-2);
+                    return `${DIAS_CORTOS[dia.getDay()]} (${fechaCorta})`;
+                }
+                return ('0' + dia.getDate()).slice(-2) + '/' + ('0' + (dia.getMonth() + 1)).slice(-2) + '/' + String(dia.getFullYear()).slice(-2);
+            };
 
             filas.forEach(r => {
                 const hText = (r.hora || '').toString();
@@ -376,8 +394,9 @@
                 let fullBadge = hText ? (label ? `${label}\n${hText}` : hText) : label;   // fecha arriba, hora debajo
                 if (esV2 && f) {
                     const ff = r.fechaFin ? parseISO(r.fechaFin) : null;
+                    if (ff) ff.setHours(0, 0, 0, 0);
                     if (ff && ff.getTime() !== f.getTime()) {
-                        fullBadge = `${DIAS[f.getDay()]} ${f.getDate()} – ${DIAS[ff.getDay()]} ${ff.getDate()} ${MESES[ff.getMonth()]}`;
+                        fullBadge = `${formatearExtremoRango(f, true)} – ${formatearExtremoRango(ff, false)}`;
                     } else if (r.horaFin && hText) {
                         fullBadge = `${label}\n${hText} – ${r.horaFin}`;
                     }
