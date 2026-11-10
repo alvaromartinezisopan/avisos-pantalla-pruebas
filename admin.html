@@ -94,6 +94,7 @@
         #btn-enviar { margin-top: 16px; font-size: 15px; background: var(--primary); }
         #btn-enviar:hover { background: #0062cc; }
         .derecha { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+        .izquierda { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
         .preview-section { position: static; height: auto; overflow: visible; border-radius: 20px; padding: 22px; }
         .lista-panel .lista-titulo { margin-top: 0; }
         .lista-panel h3 { margin: 0; font-size: 16px; font-weight: 800; }
@@ -145,6 +146,7 @@
 </div>
 
 <div class="dashboard">
+    <div class="izquierda">
     <div class="panel form-section">
         <div class="cabecera"><h2 id="h-form">Nuevo aviso</h2><div class="proto"><b>MODO TEST</b> · hoja y script de pruebas</div></div>
         <p class="sub">Escribe el aviso y mira a la derecha cómo se verá en la tele.</p>
@@ -204,7 +206,7 @@
         </form>
     </div>
 
-    <div class="panel form-section" style="margin-top:14px">
+    <div class="panel form-section">
         <div class="cabecera"><h2>Pantalla</h2></div>
         <p class="sub">Cada cuántos segundos cambia de página la tele cuando hay muchos avisos a la vez (de 3 a 120).</p>
         <div class="fila" style="align-items:flex-end">
@@ -212,6 +214,7 @@
             <div><button type="button" id="btn-segundos" onclick="guardarSegundos()">GUARDAR</button></div>
         </div>
         <div id="segundos-estado" class="nota-opc"></div>
+    </div>
     </div>
 
     <div class="derecha">
