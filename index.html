@@ -138,7 +138,7 @@
             font-size: calc(var(--u)*18); font-weight: 900; padding: calc(var(--u)*10) calc(var(--u)*20); border-radius: calc(var(--u)*16);
             white-space: pre; text-align: center; line-height: 1.25;
             background: rgba(255, 255, 255, 0.95);
-            color: #1a1a1a; text-transform: uppercase;
+            color: #1a1a1a; text-transform: none;
             box-shadow: 0 calc(var(--u)*4) calc(var(--u)*8) rgba(0,0,0,0.05); z-index: 2; position: relative;
         }
         .date-badge:not(:empty) { display: block; }
@@ -357,7 +357,20 @@
                     const dayDiff = Math.round((f.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
                     if (dayDiff === 0) label = "HOY";
                     else if (dayDiff === 1) label = "MAÑANA";
-                    else label = ('0' + f.getDate()).slice(-2) + '/' + ('0' + (f.getMonth() + 1)).slice(-2) + '/' + String(f.getFullYear()).slice(-2);   // compacto: 04/11/26
+                    else {
+                        const inicioSemana = new Date(hoy);
+                        inicioSemana.setDate(inicioSemana.getDate() - ((inicioSemana.getDay() + 6) % 7));
+                        const finSemana = new Date(inicioSemana);
+                        finSemana.setDate(finSemana.getDate() + 6);
+                        if (f > hoy && f <= finSemana) {
+                            const diasCompletos = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+                            const nombreDia = diasCompletos[f.getDay()];
+                            const fechaCorta = ('0' + f.getDate()).slice(-2) + '/' + ('0' + (f.getMonth() + 1)).slice(-2);
+                            label = nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1) + ' (' + fechaCorta + ')';
+                        } else {
+                            label = ('0' + f.getDate()).slice(-2) + '/' + ('0' + (f.getMonth() + 1)).slice(-2) + '/' + String(f.getFullYear()).slice(-2);   // compacto: 04/11/26
+                        }
+                    }
                 }
 
                 let fullBadge = hText ? (label ? `${label}\n${hText}` : hText) : label;   // fecha arriba, hora debajo
