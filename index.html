@@ -152,8 +152,7 @@ function summaryCard(lines,date,miss){
  return '<div class="notif-card celeb-special"><div class="app-icon">'+GIFT+'</div><div class="content">'+
   '<div class="title">Se nos pasó celebrar</div>'+
   '<div class="job-role">Cumpleaños y aniversarios'+(miss.length?" · SIN FESTIVOS "+miss.join("/"):"")+'</div>'+
-  '<div class="tv-list">'+lines.map(l=>'<div class="tv-row"><span class="tv-day">'+l.day+'<em>'+l.why+'</em></span><span class="tv-name">'+l.name+' (ficticio/a)<small>'+l.what+'</small></span></div>').join('')+'</div></div>'+
-  '<div class="date-badge"><small>Se muestra</small>'+fmt(date)+'</div></div>';
+  '<div class="tv-list">'+lines.map(l=>'<div class="tv-row"><span class="tv-day">'+l.day+'<em>'+l.why+'</em></span><span class="tv-name">'+l.name+' (ficticio/a)<small>'+l.what+'</small></span></div>').join('')+'</div></div></div>';
 }
 
 async function render(){
