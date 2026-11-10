@@ -289,6 +289,20 @@
             });
         }
 
+        // Configuracion de la pantalla (lector v3 con ?config=1). Si el lector es antiguo o falla, se mantiene el valor actual.
+        function leerConfig() {
+            return new Promise((ok) => {
+                const nombre = 'cfgCb' + Date.now();
+                const s = document.createElement('script');
+                const t = setTimeout(() => { limpiar(); ok(null); }, 8000);
+                const limpiar = () => { clearTimeout(t); delete window[nombre]; s.remove(); };
+                window[nombre] = (d) => { limpiar(); ok(d && typeof d === 'object' && !Array.isArray(d) ? d : null); };
+                s.onerror = () => { limpiar(); ok(null); };
+                s.src = WEB_APP_URL + '?callback=' + nombre + '&config=1&t=' + Date.now();
+                document.head.appendChild(s);
+            });
+        }
+
         // Avisos de la hoja -> tarjetas. Se evalúa con el reloj de la pantalla; también se reutiliza sin conexión para que 'retirar en' se respete.
         function avisosDesdeFilas(filas, ahora, hoy) {
             const items = [];
@@ -377,6 +391,11 @@
 
                 ultimasFilas = filas;
                 items = avisosDesdeFilas(filas, ahora, hoy);
+
+                // Segundos entre paginas (config de la hoja; por defecto 10)
+                const cfg = await leerConfig();
+                const seg = cfg && Number(cfg.segundos);
+                if (seg && seg >= 3 && seg <= 120 && seg !== PAGINA_SEGUNDOS) { PAGINA_SEGUNDOS = seg; repaginar(); }
 
                 // 2. Celebraciones
                 const cText = CELEB_SHEET_URL ? await (await fetch(`${CELEB_SHEET_URL}&t=${Date.now()}`)).text() : celebracionesFicticias();
@@ -535,7 +554,7 @@
         // ==================================================================
         // NUEVO: urgentes primero + páginas por turnos si no caben (sin animaciones, cambio instantáneo)
         // ==================================================================
-        const PAGINA_SEGUNDOS = 10;  // tiempo que se muestra cada página cuando hay varias
+        let PAGINA_SEGUNDOS = 10;  // tiempo que se muestra cada página cuando hay varias (se lee de la hoja, pestaña Config)
         const renderItemsBase = renderItems;
         let temporizadorPaginas = null;
         let paginaActual = 0;
