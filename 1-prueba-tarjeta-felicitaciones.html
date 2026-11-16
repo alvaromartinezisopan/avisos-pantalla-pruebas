@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><title>Prueba tarjeta (datos ficticios)</title>
+    <style>
+        /* Escala: tamaño original como máximo; si el hueco es más estrecho de ~700 px, todo se reduce proporcionalmente. */
+        :root { --u: min(1px, 0.1429vw); }
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100vh;
+            overflow: hidden;
+            background-color: transparent !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: calc(var(--u)*50) calc(var(--u)*35) calc(var(--u)*20) calc(var(--u)*35); 
+            box-sizing: border-box;
+            
+        }
+
+        #notification-stack {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--u)*14); 
+            width: 100%;
+        }
+
+        .notif-card {
+            position: relative;
+            width: 100%; 
+            border-radius: calc(var(--u)*25);
+            display: flex; align-items: center; gap: calc(var(--u)*22);
+            padding: calc(var(--u)*22) calc(var(--u)*30); 
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 calc(var(--u)*6) calc(var(--u)*15) rgba(0,0,0,0.06);
+            opacity: 0;
+/* sin transición (Raspberry): la tarjeta aparece directamente */
+            background-color: white;
+            
+            overflow: hidden;
+        }
+        .notif-card.show { opacity: 1; }
+
+        .celeb-special { 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 40%, #a1c4fd 80%, #c2e9fb 100%) !important; 
+            min-height: calc(var(--u)*140); border: calc(var(--u)*2) solid #fff !important;
+        }
+
+        .urgente-special { 
+            background: transparent !important;
+            overflow: visible !important;
+            border: none !important;
+            min-height: calc(var(--u)*140);
+        }
+
+        .urgente-special::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #ff4b42;
+            border: none;
+            border-radius: calc(var(--u)*25);
+            z-index: -1;
+        }
+
+        .urgente-special::before {
+            content: '';
+            position: absolute;
+            top: calc(var(--u)*-5); left: calc(var(--u)*-5); right: calc(var(--u)*-5); bottom: calc(var(--u)*-5);
+            background: linear-gradient(115deg, #ff1e1e, #ff6b3d, #d40000, #ff3d68);
+            border-radius: calc(var(--u)*33);
+            filter: blur(12px);
+            opacity: 0.9;
+            z-index: -2;
+        }
+
+        /* Estado vacío (sin avisos): centrado en horizontal, arriba, azul corporativo */
+        .reposo-especial { background: transparent !important; border: none !important; box-shadow: none !important; justify-content: center; overflow: visible !important; }
+        .rp-centro { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u)*14); width: 100%; padding: calc(var(--u)*10) 0; }
+        .rp-ring { width: calc(var(--u)*110); height: calc(var(--u)*110); border-radius: 50%; background: linear-gradient(135deg, #e3f0ff, #eaf5ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 calc(var(--u)*10) rgba(10,100,216,.08), 0 0 calc(var(--u)*40) rgba(10,100,216,.25); }
+        .rp-inner { width: calc(var(--u)*78); height: calc(var(--u)*78); border-radius: 50%; background: #0a64d8; display: flex; align-items: center; justify-content: center; }
+        .rp-inner svg { width: calc(var(--u)*44); height: calc(var(--u)*44); fill: #fff; }
+        .rp-titulo { font-size: calc(var(--u)*36); font-weight: 900; color: #14355e; letter-spacing: calc(var(--u)*-0.8); }
+        .rp-sub { font-size: calc(var(--u)*18); font-weight: 600; color: #5a6b82; }
+
+        /* Tarjeta resumen "Estos días hemos tenido algo que celebrar..." */
+        .resumen-lineas { display: flex; flex-direction: column; gap: calc(var(--u)*8); z-index: 2; position: relative; margin-top: calc(var(--u)*6); }
+        .rl { display: flex; align-items: center; gap: calc(var(--u)*14); }
+        .rl-fecha { flex: 0 0 auto; font-size: calc(var(--u)*13); font-weight: 800; color: #0a64d8; background: rgba(255,255,255,.8); padding: calc(var(--u)*3) calc(var(--u)*10); border-radius: calc(var(--u)*9); }
+        .rl-nombre { font-size: calc(var(--u)*18); font-weight: 800; color: #1a1a1a; }
+        .rl-tipo { font-size: calc(var(--u)*14); font-weight: 700; color: rgba(0,0,0,.55); }
+        .rl-aviso { font-size: calc(var(--u)*12); font-weight: 700; color: #8a5a00; margin-top: calc(var(--u)*4); }
+
+
+        /* Resumen: columnas compartidas y puesto debajo del nombre. */
+        .resumen-lineas { display: grid; grid-template-columns: calc(var(--u)*100) minmax(0,1fr) calc(var(--u)*92); column-gap: calc(var(--u)*14); row-gap: calc(var(--u)*12); }
+        .rl { display: contents; }
+        .rl-fecha { align-self: start; justify-self: start; white-space: nowrap; }
+        .rl-persona { display: flex; flex-direction: column; gap: calc(var(--u)*2); min-width: 0; align-self: start; }
+        .rl-nombre { line-height: 1.2; overflow-wrap: anywhere; }
+        .rl-depto { font-size: calc(var(--u)*14); font-weight: 600; color: rgba(0,0,0,.6); line-height: 1.15; }
+        .rl-tipo { align-self: start; line-height: calc(var(--u)*21.6); }
+        .rl-aviso { grid-column: 1 / -1; }
+
+        /* FONDO CONFETI ESTÁTICO (Sin emojis ni animaciones) */
+        .bg-confetti {
+            background-color: #ffeef8 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect x='10' y='20' width='6' height='12' fill='%23ff3b30' transform='rotate(30 13 26)' opacity='0.4'/%3E%3Ccircle cx='40' cy='30' r='5' fill='%2334c759' opacity='0.4'/%3E%3Crect x='70' y='15' width='6' height='12' fill='%23007aff' transform='rotate(-45 73 21)' opacity='0.4'/%3E%3Ccircle cx='85' cy='60' r='6' fill='%23ffcc00' opacity='0.4'/%3E%3Crect x='20' y='75' width='8' height='8' fill='%23af52de' transform='rotate(15 24 79)' opacity='0.4'/%3E%3Ccircle cx='55' cy='85' r='5' fill='%23ff2d55' opacity='0.4'/%3E%3Crect x='80' y='80' width='4' height='14' fill='%2334c759' transform='rotate(60 82 87)' opacity='0.4'/%3E%3C/svg%3E") !important;
+            background-size: 100px 100px !important;
+            background-repeat: repeat !important;
+        }
+
+        .title { color: #1a1a1a; font-weight: 800; font-size: calc(var(--u)*22); letter-spacing: calc(var(--u)*-0.6); z-index: 2; position: relative; }
+        .message { color: #333; font-size: calc(var(--u)*18); line-height: 1.3; font-weight: 600; z-index: 2; position: relative; }
+        
+        .job-role { 
+            font-size: calc(var(--u)*14); font-weight: 700; color: rgba(0,0,0,0.6); 
+            text-transform: uppercase; margin-top: calc(var(--u)*-2); margin-bottom: calc(var(--u)*4); z-index: 2; position: relative;
+        }
+
+        .celeb-special .title, .urgente-special .title { font-size: calc(var(--u)*26); font-weight: 900; }
+        .urgente-special .title, .urgente-special .message { color: white !important; }
+
+        .app-icon {
+            position: relative;
+            width: calc(var(--u)*55); height: calc(var(--u)*55); border-radius: calc(var(--u)*16);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; z-index: 2;
+        }
+        .celeb-special .app-icon, .urgente-special .app-icon { 
+            width: calc(var(--u)*75); height: calc(var(--u)*75); background: white !important; 
+            box-shadow: 0 calc(var(--u)*4) calc(var(--u)*10) rgba(0,0,0,0.1);
+        }
+
+        .app-icon svg { width: calc(var(--u)*34); height: calc(var(--u)*34); fill: white; }
+        .celeb-special .app-icon svg { fill: #0a64d8 !important; width: calc(var(--u)*42); height: calc(var(--u)*42); }
+        .urgente-special .app-icon svg { fill: #ff4b42 !important; width: calc(var(--u)*42); height: calc(var(--u)*42); }
+        
+        .content { display: flex; flex-direction: column; gap: calc(var(--u)*4); flex: 1; min-width: 0; z-index: 2; }
+        
+        .date-badge {
+            display: none;
+            font-size: calc(var(--u)*18); font-weight: 900; padding: calc(var(--u)*10) calc(var(--u)*20); border-radius: calc(var(--u)*16);
+            white-space: pre; text-align: center; line-height: 1.25;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a; text-transform: none;
+            box-shadow: 0 calc(var(--u)*4) calc(var(--u)*8) rgba(0,0,0,0.05); z-index: 2; position: relative;
+        }
+        .date-badge:not(:empty) { display: block; }
+
+      /* ==================================================================
+   EFECTO GLOW EXCLUSIVO PARA CELEBRACIONES (Cumpleaños, Aniversarios y Bienvenidas)
+   ================================================================== */
+
+        .celeb-special {
+            background: transparent !important;
+            overflow: visible !important;
+            border: none !important;
+            min-height: calc(var(--u)*140);
+        }
+
+        .celeb-special::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #e3f0ff 0%, #eaf5ff 50%, #e0eeff 100%);
+            border: none;
+            border-radius: calc(var(--u)*25);
+            z-index: -1; 
+        }
+
+        /* Brillo como sombra directa de la tarjeta (sin filter ni pseudo-elemento) */
+        .celeb-special { box-shadow: 0 0 calc(var(--u)*12) calc(var(--u)*5) rgba(20,170,255,.75), 0 0 calc(var(--u)*26) calc(var(--u)*6) rgba(10,100,216,.30) !important; }
+
+        #indicador-paginas { position:fixed; right:calc(var(--u)*35); bottom:calc(var(--u)*6); display:none;
+            font-size:calc(var(--u)*17); font-weight:800; letter-spacing:0.02em; color:#fff; background:rgba(29,29,31,0.88);
+            padding:calc(var(--u)*5) calc(var(--u)*16); border-radius:999px; line-height:1.15; }
+    </style></head>
+<body>
+<div id="main-container"><div id="notification-stack">
+<div class="notif-card show celeb-special" style="background-color:transparent">
+<div class="app-icon" style="background-color:white"><svg viewBox="0 0 24 24" width="42" height="42" fill="#0a64d8"><rect fill="#0a64d8" x="7.6" y="2.8" width="1.7" height="4.4" rx="0.85"/><rect fill="#0a64d8" x="14.7" y="2.8" width="1.7" height="4.4" rx="0.85"/><path fill="#0a64d8" fill-rule="evenodd" d="M5.4 5.2h13.2a2.2 2.2 0 0 1 2.2 2.2v11.4a2.2 2.2 0 0 1-2.2 2.2H5.4a2.2 2.2 0 0 1-2.2-2.2V7.4a2.2 2.2 0 0 1 2.2-2.2zM3.2 8.7h17.6v1.3H3.2z"/><path fill="#fff" d="M12 18.2l2.1 1.28-.56-2.42 1.76-1.72-2.43-.36L12 12.7l-.87 2.28-2.43.36 1.76 1.72-.56 2.42z"/></svg></div>
+<div class="content"><div class="title">Felicitaciones pendientes</div><div class="job-role">CUMPLEAÑOS Y ANIVERSARIOS</div>
+<div class="resumen-lineas">
+<div class="rl"><span class="rl-fecha">DOM 15 NOV</span><span class="rl-persona"><span class="rl-nombre">ANA EJEMPLO</span><span class="rl-depto">Producción</span></span><span class="rl-tipo">Cumpleaños</span></div>
+<div class="rl"><span class="rl-fecha">SÁB 14 NOV</span><span class="rl-persona"><span class="rl-nombre">LUIS DE PRUEBA</span><span class="rl-depto">Producción</span></span><span class="rl-tipo">Cumpleaños</span></div>
+</div></div></div>
+</div></div>
+</body></html>
